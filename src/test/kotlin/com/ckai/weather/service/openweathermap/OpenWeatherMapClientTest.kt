@@ -1,30 +1,71 @@
 package com.ckai.weather.service.openweathermap
 
+import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapClientException
+import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapServerException
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.web.reactive.function.client.ExchangeStrategies
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
+import java.io.File
 
 @RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 class OpenWeatherMapClientTest {
 
-    @Autowired
+    val server: MockWebServer = MockWebServer()
+        @Rule get
+
     private lateinit var client: OpenWeatherMapClient
 
-    @Test
-    fun testBasicSetup() {
-        assertThat(client.apiClient).isNotNull
+    @Before
+    fun before() {
+        client = OpenWeatherMapClient(
+                WebClient.builder()
+                        .baseUrl(server.url("/").toString())
+                        .exchangeStrategies(ExchangeStrategies.builder()
+                                .codecs { it.defaultCodecs().enableLoggingRequestDetails(true) }
+                                .build())
+                        .build())
     }
 
     @Test
     fun testWeatherByName() {
-        StepVerifier.create(client.weatherByName("London"))
-                .assertNext { assertThat(it.city).isEqualTo("London") }
-                .verifyComplete()
+        val url = javaClass.classLoader.getResource("openweathermap/model/weather-los-angeles.json")
 
+        server.enqueue(MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json; charset=utf-8")
+                .addHeader("X-Cache-Key", "/data/2.5/weather?q=los angeles")
+                .setBody(File(url.file).readText()))
+
+        StepVerifier.create(client.weatherByName("Los Angeles"))
+                .assertNext { assertThat(it.city).isEqualTo("Los Angeles") }
+                .verifyComplete()
+    }
+
+    @Test
+    fun testWeatherByName_whenReceive401() {
+        val url = javaClass.classLoader.getResource("openweathermap/model/weather-401.json")
+        server.enqueue(MockResponse().setResponseCode(401)
+                .setBody(File(url.file).readText()))
+
+        StepVerifier.create(client.weatherByName("Los Angeles"))
+                .verifyError(OpenWeatherMapClientException::class.java)
+    }
+
+
+    @Test
+    fun testWeatherByName_whenReceive500() {
+        server.enqueue(MockResponse().setResponseCode(500))
+        StepVerifier.create(client.weatherByName("Los Angeles"))
+                .verifyError(OpenWeatherMapServerException::class.java)
     }
 }

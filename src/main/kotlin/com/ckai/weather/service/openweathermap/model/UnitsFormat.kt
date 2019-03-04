@@ -1,2 +1,2 @@
-package com.ckai.weather.service.openweathermap
+package com.ckai.weather.service.openweathermap.model
 
