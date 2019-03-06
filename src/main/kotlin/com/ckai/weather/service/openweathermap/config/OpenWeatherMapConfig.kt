@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
 class OpenWeatherMapConfig {
 
     @Bean
-    fun openWeatherMapApiClient(
+    fun openWeatherMapWebClient(
             @Value("\${openweathermap.baseUrl}") baseUrl: String,
             @Value("\${openweathermap.apiKey}") apiKey: String): WebClient {
         return WebClient.builder()

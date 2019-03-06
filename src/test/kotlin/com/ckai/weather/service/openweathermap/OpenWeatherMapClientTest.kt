@@ -18,16 +18,16 @@ import java.io.File
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
-class OpenWeatherMapClientTest {
+class OpenWeatherMapApiClientTest {
 
     val server: MockWebServer = MockWebServer()
         @Rule get
 
-    private lateinit var client: OpenWeatherMapClient
+    private lateinit var client: OpenWeatherMapApiClient
 
     @Before
     fun before() {
-        client = OpenWeatherMapClient(
+        client = OpenWeatherMapApiClient(
                 WebClient.builder()
                         .baseUrl(server.url("/").toString())
                         .exchangeStrategies(ExchangeStrategies.builder()

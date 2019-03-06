@@ -2,6 +2,7 @@ package com.ckai.weather.service.openweathermap
 
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapClientException
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapServerException
+import com.ckai.weather.service.openweathermap.model.OpenWeatherMapUnitsFormat
 import com.ckai.weather.service.openweathermap.model.WeatherResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -10,17 +11,23 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 @Component
-class OpenWeatherMapClient @Autowired constructor(openWeatherMapApiClient: WebClient) {
+class OpenWeatherMapApiClient @Autowired constructor(openWeatherMapWebClient: WebClient) {
 
-    val apiClient = openWeatherMapApiClient
+    val webClient = openWeatherMapWebClient
 
     companion object {
         const val URI_WEATHER = "/data/2.5/weather"
     }
 
-    fun weatherByName(name: String): Mono<WeatherResponse> {
-        return apiClient.get()
-                .uri { builder -> builder.path(URI_WEATHER).queryParam("q", name).build() }
+    fun weatherByName(name: String, unitsFormat: OpenWeatherMapUnitsFormat = OpenWeatherMapUnitsFormat.STANDARD): Mono<WeatherResponse> {
+        return webClient.get()
+                .uri { builder ->
+                    builder.path(URI_WEATHER).queryParam("q", name)
+                    if (unitsFormat != OpenWeatherMapUnitsFormat.STANDARD) {
+                        builder.queryParam("units", unitsFormat.units)
+                    }
+                    builder.build()
+                }
                 .retrieve()
                 .onStatus({ it.is4xxClientError }, { Mono.error(OpenWeatherMapClientException(it)) })
                 .onStatus({ it.is5xxServerError }, { Mono.error(OpenWeatherMapServerException(it)) })
