@@ -19,20 +19,23 @@ class OpenWeatherMapApiClient @Autowired constructor(openWeatherMapWebClient: We
         const val URI_WEATHER = "/data/2.5/weather"
     }
 
-    fun weatherByName(name: String, unitsFormat: OpenWeatherMapUnitsFormat = OpenWeatherMapUnitsFormat.STANDARD): Mono<WeatherResponse> {
+    fun weatherByName(
+        name: String,
+        unitsFormat: OpenWeatherMapUnitsFormat = OpenWeatherMapUnitsFormat.STANDARD
+    ): Mono<WeatherResponse> {
         return webClient.get()
-                .uri { builder ->
-                    builder.path(URI_WEATHER).queryParam("q", name)
-                    if (unitsFormat != OpenWeatherMapUnitsFormat.STANDARD) {
-                        builder.queryParam("units", unitsFormat.units)
-                    }
-                    builder.build()
+            .uri { builder ->
+                builder.path(URI_WEATHER).queryParam("q", name)
+                if (unitsFormat != OpenWeatherMapUnitsFormat.STANDARD) {
+                    builder.queryParam("units", unitsFormat.units)
                 }
-                .retrieve()
-                .onStatus({ it.is4xxClientError }, { Mono.error(OpenWeatherMapClientException(it)) })
-                .onStatus({ it.is5xxServerError }, { Mono.error(OpenWeatherMapServerException(it)) })
-                .bodyToMono(WeatherResponse::class.java)
-                .subscribeOn(Schedulers.elastic())
+                builder.build()
+            }
+            .retrieve()
+            .onStatus({ it.is4xxClientError }, { Mono.error(OpenWeatherMapClientException(it)) })
+            .onStatus({ it.is5xxServerError }, { Mono.error(OpenWeatherMapServerException(it)) })
+            .bodyToMono(WeatherResponse::class.java)
+            .subscribeOn(Schedulers.elastic())
     }
 }
 

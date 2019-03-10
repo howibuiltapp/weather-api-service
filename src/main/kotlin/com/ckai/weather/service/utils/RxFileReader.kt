@@ -9,8 +9,8 @@ class RxFileReader {
         fun fromPath(path: Path): Flux<String> {
             return Flux.defer {
                 Flux.using({ Files.lines(path) },
-                        { stream -> Flux.fromStream(stream) },
-                        { stream -> stream.close() })
+                    { stream -> Flux.fromStream(stream) },
+                    { stream -> stream.close() })
             }
         }
     }

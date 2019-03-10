@@ -17,23 +17,24 @@ class OpenWeatherMapConfig {
 
     @Bean
     fun openWeatherMapWebClient(
-            @Value("\${openweathermap.baseUrl}") baseUrl: String,
-            @Value("\${openweathermap.apiKey}") apiKey: String): WebClient {
+        @Value("\${openweathermap.baseUrl}") baseUrl: String,
+        @Value("\${openweathermap.apiKey}") apiKey: String
+    ): WebClient {
         return WebClient.builder()
-                .baseUrl(baseUrl)
-                .exchangeStrategies(ExchangeStrategies.builder()
-                        .codecs { it.defaultCodecs().enableLoggingRequestDetails(true) }
-                        .build())
-                .filter(ExchangeFilterFunction.ofRequestProcessor {
-                    val url = UriComponentsBuilder.fromUri(it.url())
-                            .queryParam("appid", apiKey)
-                            .build()
-                            .toUri()
-                    val request = ClientRequest.from(it).url(url)
-                            .build()
-                    Mono.just(request)
-                })
-                .build()
+            .baseUrl(baseUrl)
+            .exchangeStrategies(ExchangeStrategies.builder()
+                .codecs { it.defaultCodecs().enableLoggingRequestDetails(true) }
+                .build())
+            .filter(ExchangeFilterFunction.ofRequestProcessor {
+                val url = UriComponentsBuilder.fromUri(it.url())
+                    .queryParam("appid", apiKey)
+                    .build()
+                    .toUri()
+                val request = ClientRequest.from(it).url(url)
+                    .build()
+                Mono.just(request)
+            })
+            .build()
     }
 
 }
