@@ -2,7 +2,7 @@ package com.ckai.weather.service.openweathermap
 
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapClientException
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapServerException
-import com.ckai.weather.service.openweathermap.model.OpenWeatherMapUnitsFormat
+import com.ckai.weather.service.openweathermap.model.UnitsFormat
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.assertj.core.api.Assertions.assertThat
@@ -31,7 +31,6 @@ class OpenWeatherMapApiClientTest {
 
     @Before
     fun before() {
-
         val webClient = openWeatherMapWebClient.mutate()
             .baseUrl(server.url("/").toString())
             .build()
@@ -73,13 +72,13 @@ class OpenWeatherMapApiClientTest {
         )
 
         StepVerifier
-            .create(apiClient.weatherByName("Los Angeles", OpenWeatherMapUnitsFormat.METRIC))
+            .create(apiClient.weatherByName("Los Angeles", UnitsFormat.METRIC))
             .assertNext { assertThat(it.city).isEqualTo("Los Angeles") }
             .verifyComplete()
 
         val request = server.takeRequest()
-        assertThat(request.requestUrl.queryParameterNames()).isEqualTo(setOf("q", "appid", "units"))
-        assertThat(request.requestUrl.queryParameterValues("units")).isEqualTo(listOf("metric"))
+        assertThat(request.requestUrl.queryParameterNames()).isEqualTo(setOf("q", "appid", "format"))
+        assertThat(request.requestUrl.queryParameterValues("format")).isEqualTo(listOf("metric"))
     }
 
     @Test

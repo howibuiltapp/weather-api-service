@@ -1,6 +1,6 @@
 package com.ckai.weather.service.openweathermap.model
 
-enum class OpenWeatherMapUnitsFormat(val units: String) {
+enum class UnitsFormat(val format: String) {
     /**
      * 1. Temperature: Kelvin
      * 2. Distance: Meter

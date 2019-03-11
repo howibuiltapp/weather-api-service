@@ -2,7 +2,7 @@ package com.ckai.weather.service.openweathermap
 
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapClientException
 import com.ckai.weather.service.openweathermap.exception.OpenWeatherMapServerException
-import com.ckai.weather.service.openweathermap.model.OpenWeatherMapUnitsFormat
+import com.ckai.weather.service.openweathermap.model.UnitsFormat
 import com.ckai.weather.service.openweathermap.model.WeatherResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -21,13 +21,13 @@ class OpenWeatherMapApiClient @Autowired constructor(openWeatherMapWebClient: We
 
     fun weatherByName(
         name: String,
-        unitsFormat: OpenWeatherMapUnitsFormat = OpenWeatherMapUnitsFormat.STANDARD
+        unitsFormat: UnitsFormat = UnitsFormat.STANDARD
     ): Mono<WeatherResponse> {
         return webClient.get()
             .uri { builder ->
                 builder.path(URI_WEATHER).queryParam("q", name)
-                if (unitsFormat != OpenWeatherMapUnitsFormat.STANDARD) {
-                    builder.queryParam("units", unitsFormat.units)
+                if (unitsFormat != UnitsFormat.STANDARD) {
+                    builder.queryParam("format", unitsFormat.format)
                 }
                 builder.build()
             }
